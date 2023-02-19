@@ -8,7 +8,8 @@ import {Task} from './Task/Task'
 import {TaskStatuses, TaskType} from '../../../api/todolists-api'
 import {FilterValuesType, TodolistDomainType} from '../todolists-reducer'
 import {fetchTasksTC} from '../tasks-reducer'
-import {useAppDispatch} from "../../../app/store";
+import {useAppDispatch, useAppSelector} from "../../../app/store";
+import {Navigate} from "react-router-dom";
 
 type PropsType = {
     todolist: TodolistDomainType
@@ -24,6 +25,7 @@ type PropsType = {
 
 export const Todolist = React.memo(function ({...props}: PropsType) {
     console.log('Todolist called')
+    const isLoggedIn = useAppSelector(state => state.auth.isLoggedIn)
 
     const dispatch = useAppDispatch()
     useEffect(() => {
@@ -55,6 +57,8 @@ export const Todolist = React.memo(function ({...props}: PropsType) {
     if (props.todolist.filter === 'completed') {
         tasksForTodolist = props.tasks.filter(t => t.status === TaskStatuses.Completed)
     }
+
+
 
     return <div>
         <h3><EditableSpan value={props.todolist.title} onChange={changeTodolistTitle}/>
