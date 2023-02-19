@@ -1,8 +1,16 @@
 import {Dispatch} from 'redux'
-import {SetAppErrorActionType, setAppStatusAC, SetAppStatusActionType} from '../../app/app-reducer'
+import {
+    SetAppErrorActionType,
+    setAppInitializeAC,
+    SetAppInitializeAT,
+    setAppStatusAC,
+    SetAppStatusActionType
+} from '../../app/app-reducer'
 import {authAPI, LoginType, Result_Code, todolistsAPI} from "../../api/todolists-api";
 import {handleServerAppError, handleServerNetworkError} from "../../utils/error-utils";
 import {addTaskAC} from "../TodolistsList/tasks-reducer";
+import {Simulate} from "react-dom/test-utils";
+
 
 const initialState = {
     isLoggedIn: false
@@ -37,5 +45,40 @@ export const loginTC = (data: LoginType) => (dispatch: Dispatch<ActionsType>) =>
     })
 }
 
+export const logOutTC = () => (dispatch: Dispatch<ActionsType>) => {
+    dispatch(setAppStatusAC('loading'))
+    authAPI.logOut()
+        .then(res => {
+            if (res.data.resultCode === Result_Code.OK) {
+                dispatch(setIsLoggedInAC(false))
+                dispatch(setAppStatusAC('succeeded'))
+            } else {
+                handleServerAppError(res.data, dispatch);
+            }
+        }).catch((error) => {
+        handleServerNetworkError(error, dispatch)
+    })
+}
+
+export const meTC = () => async (dispatch: Dispatch<ActionsType>) => {
+    dispatch(setAppStatusAC('loading'))
+    try {
+        const res = await authAPI.me()
+
+        if (res.data.resultCode === 0) {
+            dispatch(setIsLoggedInAC(true))
+            dispatch(setAppStatusAC('succeeded'))
+        } else {
+            handleServerAppError(res.data,dispatch)
+        }
+    } catch (e) {
+        //@ts-ignore
+        handleServerNetworkError(e, dispatch)
+    } finally {
+        dispatch(setAppInitializeAC(true))
+    }
+}
+
+
 // types
-type ActionsType = ReturnType<typeof setIsLoggedInAC> | SetAppStatusActionType | SetAppErrorActionType
+type ActionsType = ReturnType<typeof setIsLoggedInAC> | SetAppStatusActionType | SetAppErrorActionType | SetAppInitializeAT
